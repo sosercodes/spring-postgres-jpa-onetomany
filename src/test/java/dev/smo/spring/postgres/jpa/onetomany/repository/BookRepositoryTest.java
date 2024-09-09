@@ -59,6 +59,7 @@ class BookRepositoryTest {
 
         assertNotNull(books);
         assertFalse(books.isEmpty());
+        assertEquals(1, books.size());
         assertEquals("BookWithTitle", books.getFirst().getTitle());
     }
 }
