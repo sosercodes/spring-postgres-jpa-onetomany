@@ -2,7 +2,6 @@ package dev.smo.spring.postgres.jpa.onetomany.repository;
 
 import dev.smo.spring.postgres.jpa.onetomany.TestcontainersConfiguration;
 import dev.smo.spring.postgres.jpa.onetomany.model.Book;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,11 +25,6 @@ class BookRepositoryTest {
 
     @Autowired
     private BookRepository bookRepository;
-
-    @BeforeEach
-    void setUp() {
-
-    }
 
     @Test
     @Transactional
