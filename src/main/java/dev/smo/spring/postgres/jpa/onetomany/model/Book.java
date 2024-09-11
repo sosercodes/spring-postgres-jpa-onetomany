@@ -1,13 +1,7 @@
 package dev.smo.spring.postgres.jpa.onetomany.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,9 +17,17 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @EqualsAndHashCode.Exclude
     private String title;
+    @EqualsAndHashCode.Exclude
     private BigDecimal price;
+    @EqualsAndHashCode.Exclude
     private LocalDate publishDate;
 
-}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Author author;
 
+}
