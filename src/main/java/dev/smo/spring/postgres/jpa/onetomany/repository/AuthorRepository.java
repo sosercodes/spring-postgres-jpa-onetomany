@@ -11,4 +11,5 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
     @EntityGraph(attributePaths = { "books" })
     List<Author> findByFirstName(String firstName);
 
+    void deleteByFirstName(String firstName);
 }
