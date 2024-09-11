@@ -1,6 +1,7 @@
 package dev.smo.spring.postgres.jpa.onetomany.repository;
 
 import dev.smo.spring.postgres.jpa.onetomany.TestcontainersConfiguration;
+import dev.smo.spring.postgres.jpa.onetomany.model.Author;
 import dev.smo.spring.postgres.jpa.onetomany.model.Book;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,5 +57,31 @@ class BookRepositoryTest {
         assertFalse(books.isEmpty());
         assertEquals(1, books.size());
         assertEquals("BookWithTitle", books.getFirst().getTitle());
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    void findByTitleWithAuthor() {
+        Book b1 = Book.builder()
+                .title("BookWithTitle")
+                .price(BigDecimal.valueOf(39.99))
+                .publishDate(LocalDate.of(2023, 5, 5))
+                .build();
+        Author a1 = Author.builder()
+                .firstName("firstname")
+                .lastName("lastname")
+                .books(new ArrayList<>())
+                .build();
+        a1.addBook(b1);
+        bookRepository.save(b1);
+        List<Book> books = bookRepository.findByTitle("BookWithTitle");
+
+        assertNotNull(books);
+        assertFalse(books.isEmpty());
+        assertEquals(1, books.size());
+        assertEquals("BookWithTitle", books.getFirst().getTitle());
+        assertNotNull(books.getFirst().getAuthor());
+        assertEquals(books.getFirst().getAuthor().getFirstName(), "firstname");
     }
 }

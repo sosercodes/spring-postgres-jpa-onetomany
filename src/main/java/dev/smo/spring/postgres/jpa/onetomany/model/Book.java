@@ -24,7 +24,7 @@ public class Book {
     @EqualsAndHashCode.Exclude
     private LocalDate publishDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "author_id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
