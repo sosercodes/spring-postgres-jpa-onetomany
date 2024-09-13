@@ -1,5 +1,6 @@
 package dev.smo.spring.postgres.jpa.onetomany.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class Book {
     @JoinColumn(name = "author_id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonBackReference
     private Author author;
 
 }

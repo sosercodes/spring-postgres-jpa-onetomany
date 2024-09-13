@@ -1,7 +1,7 @@
 # Spring Boot, Postgres, and OneToMany
 
 This article shows how to use Spring Boot, Spring Data JPA and PostgreSQL to create a One-to-Many Relationship. 
-Additionally it shows how to add REST endpoints for CRUD database operations.
+Additionally it shows how to add REST endpoints for CRUD database operations and test them with REST Assured.
 
 We use Testcontainers to start an actual PostgreSQL container for testing and developement.
 You need to have Docker or Docker Desktop to be running in the background.
@@ -11,9 +11,10 @@ This application uses the following Technologies.
 - Spring Boot
 - Spring Data JPA
 - PostgreSQL
-- JUnit 5
 - Docker
 - Testcontainers
+- JUnit 5
+- REST Assured
 
 
 ## One-to-Many Relationships
@@ -109,17 +110,28 @@ The following best practices are recommended.
 - **Orphan removal**: Use `orphanRemoval = true` to automatically remove child entities when they're removed from the collection
 - **Bidirectional relationship management**: Always maintain both sides of the relationship and add the following methods to the `Book` entity.
 
-```java
-public void addBook(Book book) {
-    books.add(book);
-    book.setAuthor(this);
-}
+    ```java
+    public void addBook(Book book) {
+        books.add(book);
+        book.setAuthor(this);
+    }
+    
+    public void removeBook(Book book) {
+        books.remove(book);
+        book.setAuthor(null);
+    }
+    ```
+- **Owning Side**: _It’s a good practice to mark the many-to-one side as the owning side (JPA specification under section 2.9)_
+    In this example `Book` should be the owning side and `Author` the inverse side.
+    
+    But how can we achieve this?
 
-public void removeBook(Book book) {
-    books.remove(book);
-    book.setAuthor(null);
-}
-```
+    By including the `mappedBy` attribute in the `Author` class, we mark it as the inverse side.
+    At the same time, we also annotate the `Book.author` field with `@ManyToOne`, which makes `Book` the _owning side_.
+    Now Hibernate knows that the `author` reference in `Book` is more important and will save this reference to the database, even if we forget to set the reference in `Author`.
+    
+    See [Baeldung - Hibernate One to Many](https://www.baeldung.com/hibernate-one-to-many) and [Github - Hibernate-Annotations - HibernateManyIsOwningSide](https://github.com/eugenp/tutorials/tree/master/persistence-modules/hibernate-annotations/src/main/java/com/baeldung/hibernate/oneToMany).
+
 
 ### Performance Considerations
 
@@ -130,13 +142,126 @@ public void removeBook(Book book) {
 
 OneToMany relationships in Spring Data JPA provide a powerful way to model hierarchical data structures. By following best practices and understanding the implications of bidirectional vs unidirectional relationships, you can create efficient and maintainable data models for your application.
 
-## Owning Side
+## Rest-Assured
 
-Baeldung explains about the _Owning-Side_ in [Hibernate One to Many](https://www.baeldung.com/hibernate-one-to-many).
-You can find the source-code at Github [Github - Hibernate-Annotations - HibernateManyIsOwningSide](https://github.com/eugenp/tutorials/tree/master/persistence-modules/hibernate-annotations/src/main/java/com/baeldung/hibernate/oneToMany).
+Our integration tests use REST Assured in conjunction with Testcontainers to test the Spring REST services,
+that run in within a containerized environment, ensuring a more realistic and comprehensive testing scenario.
+
+For example we use the following `@GetMapping` in the `AuthorController` to get a `Author` from the database.
+
+```java
+@RestController
+@RequestMapping("/api/author")
+public class AuthorController {
+
+    AuthorService authorService;
+
+    public AuthorController(AuthorService authorService) {
+        this.authorService = authorService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Author> get(@PathVariable("id") Long id) {
+        var author = authorService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author with id: '" + id + "' not found!"));
+
+        return ResponseEntity.ok(author);
+    }
+}
+```
+
+Here's a basic example of how a our integration test using REST Assured might look:
+
+```java
+@Import(TestcontainersConfiguration.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=create-drop", "app.db.init.enabled=false"})
+class AuthorControllerTestIT {
+
+    @Autowired
+    PostgreSQLContainer<?> postgres;
+
+    @Autowired
+    AuthorRepository authorRepository;
+
+    @LocalServerPort
+    private int port;
+
+    private String baseUri;
+
+    @PostConstruct
+    public void init() {
+        RestAssured.baseURI = "http://localhost/";
+        RestAssured.port = port;
+    }
+
+    @Test
+    void getAuthorWithExistingId() {
+        Author a1 = Author.builder()
+                .firstName("firstname")
+                .lastName("lastname")
+                .books(new ArrayList<>())
+                .build();
+        Book b1 = Book.builder()
+                .title("book")
+                .price(BigDecimal.valueOf(10.00))
+                .publishDate(LocalDate.of(2024 , 1, 10))
+                .author(a1)
+                .build();
+        a1.getBooks().add(b1);
+        var author = authorRepository.save(a1);
+
+        given()
+                .contentType(ContentType.JSON)
+        .when()
+                .pathParam("id", author.getId().toString())
+                .get("/api/author/{id}")
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .body("id", equalTo(author.getId().intValue()))
+                .body("firstName", equalTo(author.getFirstName()))
+                .body("lastName", equalTo(author.getLastName()))
+                .body("books", hasSize(1))
+                .body("books[0].title", equalTo(b1.getTitle()))
+                .body("books[0].price", equalTo(b1.getPrice().floatValue()))
+                .body("books[0].publishDate", equalTo(b1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+        ;
+    }
+}
+```
+
+This setup allows us to:
+
+- Use Testcontainers to start a PostgreSQL database in a Docker container
+- Start the Spring Boot application with the test database
+- Use Rest-Assured to make HTTP requests to the Spring Boot REST API and validate the responses
+
+We use the Maven Failsafe Plugin to run integration tests in Maven projects. 
+You can execute them by running:
+
+```bash
+mvn verify
+```
+
+Integration tests are run during the `integration-test` phase of the Maven build lifecycle. So this command will run both unit tests and integration tests.
 
 ## References
+
+OneToMany
 
 - [Mkyong - Spring Boot + Spring Data JPA + PostgreSQL example](https://mkyong.com/spring-boot/spring-boot-spring-data-jpa-postgresql/)
 - [Vlad Mihalcea - The best way to map a @OneToMany relationship with JPA and Hibernate](https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/)
 - [CodeGaym - Cascading changes](https://codegym.cc/quests/lectures/en.questhibernate.level13.lecture05)
+
+Hibernate
+
+- [Hibernate Entity Lifecycle](https://www.baeldung.com/hibernate-entity-lifecycle#managed-entity)
+
+Rest-Assured
+
+- [A Guide to REST-assured](https://www.baeldung.com/rest-assured-tutorial)
+- [Getting and Verifying Response Data with REST-assured](https://www.baeldung.com/rest-assured-response)
+- [How to combine Testcontainers, REST-Assured and WireMock](https://medium.com/@nihatonder87/how-to-combine-testcontainers-rest-assured-and-wiremock-8e5cb3ede16e)
+- [Rest-Assured :: Wiki :: Returning floats and doubles as BigDecimal](https://github.com/rest-assured/rest-assured/wiki/Usage#returning-floats-and-doubles-as-bigdecimal)
+
