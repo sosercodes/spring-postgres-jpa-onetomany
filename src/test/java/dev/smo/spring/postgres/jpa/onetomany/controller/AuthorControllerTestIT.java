@@ -15,9 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.math.BigDecimal;
@@ -25,11 +23,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-// import static org.junit.jupiter.api.Assertions.*;
-import static io.restassured.RestAssured.*;
-// import static io.restassured.matcher.RestAssuredMatchers.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -67,12 +64,37 @@ class AuthorControllerTestIT {
                 .build();
         Book b1 = Book.builder()
                 .title("Book 1 book title")
-                .price(BigDecimal.valueOf(10.00))
-                .publishDate(LocalDate.of(2024 , 1, 10))
+                .price(BigDecimal.valueOf(11.00))
+                .publishDate(LocalDate.of(2024 , 1, 11))
                 .build();
         a1.addBook(b1);
         author1 = authorRepository.save(a1);
         books1 = author1.getBooks().getFirst();
+
+        Author a2 = Author.builder()
+                .firstName("Author 2 first name")
+                .lastName("Author 2 last name")
+                .books(new ArrayList<>())
+                .build();
+        Book b2 = Book.builder()
+                .title("Book 2 book title")
+                .price(BigDecimal.valueOf(12.00))
+                .publishDate(LocalDate.of(2024 , 2, 12))
+                .build();
+        a2.addBook(b2);
+
+        Author a3 = Author.builder()
+                .firstName("Author 3 first name")
+                .lastName("Author 3 last name")
+                .books(new ArrayList<>())
+                .build();
+        Book b3 = Book.builder()
+                .title("Book 3 book title")
+                .price(BigDecimal.valueOf(13.00))
+                .publishDate(LocalDate.of(2024 , 3, 13))
+                .build();
+        a3.addBook(b3);
+        authorRepository.saveAll(java.util.List.of(a2, a3));
     }
 
     @Test
@@ -111,4 +133,17 @@ class AuthorControllerTestIT {
         .then()
                 .statusCode(HttpStatus.NOT_FOUND.value());
     }
+
+    @Test
+    void getAllAuthors() {
+        given()
+                .contentType(ContentType.JSON)
+        .when()
+                .get("/api/authors")
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .contentType(ContentType.JSON)
+                .body(".", hasSize(3));
+    }
+
 }

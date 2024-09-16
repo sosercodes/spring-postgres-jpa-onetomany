@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/authors")
 public class AuthorController {
@@ -25,5 +27,11 @@ public class AuthorController {
                 .orElseThrow(() -> new ResourceNotFoundException("Author with id: '" + id + "' not found!"));
 
         return ResponseEntity.ok(author);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<Author>> getAll() {
+        var authors = authorService.findAll();
+        return ResponseEntity.ok(authors);
     }
 }

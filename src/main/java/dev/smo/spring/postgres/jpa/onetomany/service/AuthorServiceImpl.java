@@ -4,6 +4,7 @@ import dev.smo.spring.postgres.jpa.onetomany.model.Author;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,5 +19,10 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Optional<Author> findById(Long id) {
         return authorRepository.findById(id);
+    }
+
+    @Override
+    public List<Author> findAll() {
+        return authorRepository.findAll();
     }
 }
