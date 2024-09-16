@@ -15,6 +15,7 @@ This application uses the following Technologies.
 - Testcontainers
 - JUnit 5
 - REST Assured
+- OpenApi / Swagger-Ui
 
 
 ## One-to-Many Relationships
@@ -246,6 +247,77 @@ mvn verify
 
 Integration tests are run during the `integration-test` phase of the Maven build lifecycle. So this command will run both unit tests and integration tests.
 
+## Documenting our REST API using OpenAPI 3.0
+
+Springdoc-openapi is a popular library for automatically generating OpenAPI 3 documentation for Spring Boot applications.
+
+To use springdoc-openapi add the following dependency:
+
+```xml
+<dependency>
+  <groupId>org.springdoc</groupId>
+  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+  <version>2.6.0</version>
+</dependency>
+```
+
+This dependency includes Swagger UI, allowing you to view the generated API documentation in a user-friendly interface.
+
+Once you've added the dependency and started your Spring Boot application, we can run our application and find the OpenAPI descriptions at /v3/api-docs`.
+
+```bash
+http://localhost:8080/v3/api-docs
+```
+
+We can configure the path in `application.properties` and set it to `/api-docs`.
+
+```java
+springdoc.api-docs.path=/api-docs
+```
+
+The OpenAPI definitions are in JSON format by default. For yaml format, we can add the `.yaml` suffix.
+
+```bash
+http://localhost:8080/api-docs.yaml
+```
+
+We can find the Swagger UI interface at: `/swagger-ui.html`
+
+```bash
+http://localhost:8080/swagger-ui.html
+```
+
+Did you notice that ugly heading `author-controller` on the top? We can change that using The `@Tag` annotation. 
+And you can also customize the generated documentation using annotations like `@Operation("")` and `@ApiResponses` to give the user some hints.
+
+```java
+@Tag(name = "Authors", description = "the Author Api")
+@RestController
+@RequestMapping("/api/authors")
+public class AuthorController {
+
+    AuthorService authorService;
+
+    public AuthorController(AuthorService authorService) {
+        this.authorService = authorService;
+    }
+
+    @Operation(summary = "Get a author by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the author",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Author.class)) }),
+            @ApiResponse(responseCode = "404", description = "Author not found", content = @Content) })
+    @GetMapping("/{id}")
+    public ResponseEntity<Author> get(@PathVariable("id") Long id) {
+        var author = authorService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author with id: '" + id + "' not found!"));
+
+        return ResponseEntity.ok(author);
+    }
+}
+```
+
+
 ## References
 
 OneToMany
@@ -265,3 +337,7 @@ Rest-Assured
 - [How to combine Testcontainers, REST-Assured and WireMock](https://medium.com/@nihatonder87/how-to-combine-testcontainers-rest-assured-and-wiremock-8e5cb3ede16e)
 - [Rest-Assured :: Wiki :: Returning floats and doubles as BigDecimal](https://github.com/rest-assured/rest-assured/wiki/Usage#returning-floats-and-doubles-as-bigdecimal)
 
+Open-Api / Swagger
+
+- [Documenting a Spring REST API Using OpenAPI 3.0](https://www.baeldung.com/spring-rest-openapi-documentation)
+- [Fady Kuzman - Using Swagger 3 in Spring Boot 3](https://medium.com/@f.s.a.kuzman/using-swagger-3-in-spring-boot-3-c11a483ea6dc)

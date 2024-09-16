@@ -3,6 +3,13 @@ package dev.smo.spring.postgres.jpa.onetomany.controller;
 import dev.smo.spring.postgres.jpa.onetomany.exception.ResourceNotFoundException;
 import dev.smo.spring.postgres.jpa.onetomany.model.Author;
 import dev.smo.spring.postgres.jpa.onetomany.service.AuthorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "Authors", description = "the Author Api")
 @RestController
 @RequestMapping("/api/authors")
 public class AuthorController {
@@ -21,6 +29,11 @@ public class AuthorController {
         this.authorService = authorService;
     }
 
+    @Operation(summary = "Get a author by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the author",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Author.class)) }),
+            @ApiResponse(responseCode = "404", description = "Author not found", content = @Content) })
     @GetMapping("/{id}")
     public ResponseEntity<Author> get(@PathVariable("id") Long id) {
         var author = authorService.findById(id)
@@ -29,6 +42,11 @@ public class AuthorController {
         return ResponseEntity.ok(author);
     }
 
+    @Operation(summary = "Get all authors", description = "fetches all author entities and their books")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found all authors",
+                    content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Author.class))) })
+    })
     @GetMapping("")
     public ResponseEntity<List<Author>> getAll() {
         var authors = authorService.findAll();
