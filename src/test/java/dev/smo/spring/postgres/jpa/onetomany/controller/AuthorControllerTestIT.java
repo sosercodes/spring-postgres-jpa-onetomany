@@ -21,7 +21,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +59,6 @@ class AuthorControllerTestIT {
         Author a1 = Author.builder()
                 .firstName("Author 1 first name")
                 .lastName("Author 1 last name")
-                .books(new ArrayList<>())
                 .build();
         Book b1 = Book.builder()
                 .title("Book 1 book title")
@@ -74,7 +72,6 @@ class AuthorControllerTestIT {
         Author a2 = Author.builder()
                 .firstName("Author 2 first name")
                 .lastName("Author 2 last name")
-                .books(new ArrayList<>())
                 .build();
         Book b2 = Book.builder()
                 .title("Book 2 book title")
@@ -86,7 +83,6 @@ class AuthorControllerTestIT {
         Author a3 = Author.builder()
                 .firstName("Author 3 first name")
                 .lastName("Author 3 last name")
-                .books(new ArrayList<>())
                 .build();
         Book b3 = Book.builder()
                 .title("Book 3 book title")

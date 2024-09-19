@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -37,7 +36,6 @@ public class SpringPostgresJpaOnetomanyApplication {
 			Author a1 = Author.builder()
 					.firstName("Craig")
 					.lastName("Walls")
-					.books(new ArrayList<>())
 					.build();
 			Book b1 = Book.builder()
 					.title("Spring in Action")
