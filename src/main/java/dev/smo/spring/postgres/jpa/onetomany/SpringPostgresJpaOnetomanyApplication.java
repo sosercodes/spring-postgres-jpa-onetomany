@@ -3,6 +3,7 @@ package dev.smo.spring.postgres.jpa.onetomany;
 import dev.smo.spring.postgres.jpa.onetomany.model.Author;
 import dev.smo.spring.postgres.jpa.onetomany.model.Book;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @SpringBootApplication
 public class SpringPostgresJpaOnetomanyApplication {
 
@@ -31,6 +33,7 @@ public class SpringPostgresJpaOnetomanyApplication {
 	@ConditionalOnProperty(prefix = "app", name = "db.init.enabled", havingValue = "true")
 	public CommandLineRunner initApplication() {
 		return args -> {
+			log.debug("Initializing application...");
 			Author a1 = Author.builder()
 					.firstName("Craig")
 					.lastName("Walls")
@@ -43,6 +46,7 @@ public class SpringPostgresJpaOnetomanyApplication {
 					.build();
 			a1.addBook(b1);
 			authorRepository.saveAll(List.of(a1));
+			log.debug("Application initialized");
 		};
 	}
 
