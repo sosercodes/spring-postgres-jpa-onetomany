@@ -34,7 +34,7 @@ There are two choices how to create a `OneToMany` relationship.
 
 **Bidirectional** relationships are generally recommended because they:
 
-- Result in more efficient SQL queries[1][2]
+- Result in more efficient SQL queries
 - Allow navigation from both sides of the relationship
 - Provide better control over the relationship
 
@@ -124,6 +124,8 @@ The following best practices are recommended.
     ```
 - **Owning Side**: _It’s a good practice to mark the many-to-one side as the owning side (JPA specification under section 2.9)_
     In this example `Book` should be the owning side and `Author` the inverse side.
+    
+    >"The Owning side in the relationship will hold the foreign key in the database" - _Spring Framework Guru - Spring Framework 5 Beginner to Guru Chapter 8_ 
     
     But how can we achieve this?
 
@@ -227,7 +229,6 @@ class AuthorControllerTestIT {
                 .body("books[0].title", equalTo(b1.getTitle()))
                 .body("books[0].price", equalTo(b1.getPrice().floatValue()))
                 .body("books[0].publishDate", equalTo(b1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
-        ;
     }
 }
 ```
@@ -271,7 +272,7 @@ http://localhost:8080/v3/api-docs
 
 We can configure the path in `application.properties` and set it to `/api-docs`.
 
-```java
+```text
 springdoc.api-docs.path=/api-docs
 ```
 
