@@ -1,13 +1,13 @@
 package dev.smo.spring.postgres.jpa.onetomany.service;
 
-import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
+import dev.smo.spring.postgres.jpa.onetomany.model.AuthorDTO;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface AuthorService {
 
-    Optional<Author> findById(Long id);
+    Optional<AuthorDTO> findById(Long id);
 
-    List<Author> findAll();
+    List<AuthorDTO> findAll();
 }

@@ -1,6 +1,5 @@
 package dev.smo.spring.postgres.jpa.onetomany.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +24,6 @@ public class Author {
     private String lastName;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
     @Builder.Default
     private List<Book> books = new ArrayList<>();
 
