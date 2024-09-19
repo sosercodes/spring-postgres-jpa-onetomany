@@ -1,8 +1,8 @@
 package dev.smo.spring.postgres.jpa.onetomany.repository;
 
 import dev.smo.spring.postgres.jpa.onetomany.TestcontainersConfiguration;
-import dev.smo.spring.postgres.jpa.onetomany.model.Author;
-import dev.smo.spring.postgres.jpa.onetomany.model.Book;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Book;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

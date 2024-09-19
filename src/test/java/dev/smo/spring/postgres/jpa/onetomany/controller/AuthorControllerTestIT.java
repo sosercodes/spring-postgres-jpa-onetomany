@@ -1,8 +1,8 @@
 package dev.smo.spring.postgres.jpa.onetomany.controller;
 
 import dev.smo.spring.postgres.jpa.onetomany.TestcontainersConfiguration;
-import dev.smo.spring.postgres.jpa.onetomany.model.Author;
-import dev.smo.spring.postgres.jpa.onetomany.model.Book;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Book;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;

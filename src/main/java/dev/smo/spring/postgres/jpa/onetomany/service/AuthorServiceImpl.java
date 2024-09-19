@@ -1,6 +1,6 @@
 package dev.smo.spring.postgres.jpa.onetomany.service;
 
-import dev.smo.spring.postgres.jpa.onetomany.model.Author;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
 import org.springframework.stereotype.Service;
 

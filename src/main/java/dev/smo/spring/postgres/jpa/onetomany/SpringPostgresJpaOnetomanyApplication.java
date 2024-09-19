@@ -1,7 +1,7 @@
 package dev.smo.spring.postgres.jpa.onetomany;
 
-import dev.smo.spring.postgres.jpa.onetomany.model.Author;
-import dev.smo.spring.postgres.jpa.onetomany.model.Book;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Book;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

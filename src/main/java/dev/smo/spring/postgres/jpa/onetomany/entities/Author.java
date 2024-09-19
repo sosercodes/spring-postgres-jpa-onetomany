@@ -1,4 +1,4 @@
-package dev.smo.spring.postgres.jpa.onetomany.model;
+package dev.smo.spring.postgres.jpa.onetomany.entities;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

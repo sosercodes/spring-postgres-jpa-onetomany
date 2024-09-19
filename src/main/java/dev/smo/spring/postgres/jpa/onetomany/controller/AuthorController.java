@@ -1,7 +1,7 @@
 package dev.smo.spring.postgres.jpa.onetomany.controller;
 
 import dev.smo.spring.postgres.jpa.onetomany.exception.ResourceNotFoundException;
-import dev.smo.spring.postgres.jpa.onetomany.model.Author;
+import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
 import dev.smo.spring.postgres.jpa.onetomany.service.AuthorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
