@@ -145,6 +145,92 @@ The following best practices are recommended.
 
 OneToMany relationships in Spring Data JPA provide a powerful way to model hierarchical data structures. By following best practices and understanding the implications of bidirectional vs unidirectional relationships, you can create efficient and maintainable data models for your application.
 
+
+## JPQL - Java Persistence Query Language
+
+Here's an introduction to using joins in JPQL (Java Persistence Query Language) with Hibernate.
+You can use these expressions as an argument with the `@Query` annotation.
+
+### JPQL Joins
+
+JPQL allows you to join entities in queries using several types of joins.
+
+- Inner Joins
+- Left Joins
+- Fetch Joins
+- Joins betweeen Unrelated Entities
+
+#### Inner Joins
+
+Inner joins return results only when there is a match in both joined entities. The basic syntax is:
+
+```jpaql
+SELECT a, b FROM Author a JOIN a.books b
+```
+
+The definition of the Author entity provides all information Hibernate needs to join it to the Book entity, 
+and you don’t have to provide an additional ON statement.
+
+#### Left Joins
+
+Left joins return all results from the left entity, even if there's no match in the right entity.
+
+```jpaql
+SELECT a, b FROM Author a LEFT JOIN a.books b
+```
+
+This will return all authors, even those without a book.
+
+#### Fetch Joins
+
+Fetch joins allow you to eagerly load associated entities in a single query.
+
+```jpaql
+SELECT a FROM Author a JOIN FETCH a.books b
+```
+
+This loads both the Author and the associated Books in one query.
+
+#### Joining Unrelated Entities
+
+For Hibernate 5.1+, you can join unrelated entities using an ON clause:
+
+```jpaql
+SELECT a.firstName, a.lastName, e.phoneNumber 
+FROM Author p JOIN PhoneBookEntry e 
+ON a.firstName = e.firstName AND a.lastName = e.lastName
+```
+
+This allows joining entities that don't have a defined relationship.
+
+#### Additional Join Conditions
+
+Sometimes you want to join the related entities which fulfill additional conditions. 
+You can do this for INNER JOINs, and LEFT JOINs with an additional ON statement.
+
+```jpaql
+SELECT a, b FROM Author a JOIN a.books b ON b.publishDate > :publishDate
+```
+
+#### Path expressions or implicit joins
+
+Path expressions create implicit joins and are one of the benefits provided by the entity model.
+You can use the ‘.’ operator to navigate to related entities.
+
+```jpaql
+SELECT a FROM Author a WHERE a.books.title LIKE '%Spring%'
+```
+
+### Key Points
+
+- Use JOIN for inner joins and LEFT JOIN for left outer joins
+- JOIN FETCH eagerly loads associated entities
+- Joins are typically based on entity relationships defined in mappings
+- For complex joins on unrelated entities, use Hibernate's ON clause syntax
+- Avoid overusing joins, as they can impact query performance for large datasets
+
+When writing JPQL queries, consider the relationships between your entities and choose the appropriate join type based on your data access requirements[3][8].
+
 ## Rest-Assured
 
 Our integration tests use REST Assured in conjunction with Testcontainers to test the Spring REST services,
@@ -330,6 +416,12 @@ OneToMany
 Hibernate
 
 - [Hibernate Entity Lifecycle](https://www.baeldung.com/hibernate-entity-lifecycle#managed-entity)
+
+JPQL
+
+- [How to join unassociated entities with JPA and Hibernate](https://thorben-janssen.com/how-to-join-unrelated-entities/)
+- [JPQL – How to Define Queries in JPA and Hibernate](https://thorben-janssen.com/jpql/)
+- [What is the difference between JOIN and JOIN FETCH when using JPA and Hibernate](https://stackoverflow.com/questions/17431312/what-is-the-difference-between-join-and-join-fetch-when-using-jpa-and-hibernate)
 
 Rest-Assured
 
