@@ -31,6 +31,9 @@ class BookRepositoryTest {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private AuthorRepository authorRepository;
+
     @Test
     void contextLoads() {
         assertThat(postgres.isCreated()).isTrue();
@@ -91,4 +94,29 @@ class BookRepositoryTest {
         assertNotNull(books.getFirst().getAuthor());
         assertEquals(books.getFirst().getAuthor().getFirstName(), "firstname");
     }
+
+    @Test
+    @Transactional
+    @Rollback
+    void findBooksByAuthorId() {
+        Book b1 = Book.builder()
+                .title("BookWithTitle")
+                .price(BigDecimal.valueOf(39.99))
+                .publishDate(LocalDate.of(2023, 5, 5))
+                .build();
+        Author a1 = Author.builder()
+                .firstName("firstname")
+                .lastName("lastname")
+                .books(new ArrayList<>())
+                .build();
+        a1.addBook(b1);
+        var as = authorRepository.save(a1);
+
+        var books = bookRepository.findBooksByAuthorId(as.getId());
+        assertNotNull(books);
+        assertFalse(books.isEmpty());
+        assertEquals(1, books.size());
+        assertEquals("BookWithTitle", books.getFirst().getTitle());
+    }
+
 }

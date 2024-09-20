@@ -2,7 +2,9 @@ package dev.smo.spring.postgres.jpa.onetomany.controller;
 
 import dev.smo.spring.postgres.jpa.onetomany.exception.ResourceNotFoundException;
 import dev.smo.spring.postgres.jpa.onetomany.model.AuthorDTO;
+import dev.smo.spring.postgres.jpa.onetomany.model.BookDTO;
 import dev.smo.spring.postgres.jpa.onetomany.service.AuthorService;
+import dev.smo.spring.postgres.jpa.onetomany.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,9 +26,11 @@ import java.util.List;
 public class AuthorController {
 
     AuthorService authorService;
+    BookService bookService;
 
-    public AuthorController(AuthorService authorService) {
+    public AuthorController(AuthorService authorService, BookService bookService) {
         this.authorService = authorService;
+        this.bookService = bookService;
     }
 
     @Operation(summary = "Get a author by its id")
@@ -42,7 +46,7 @@ public class AuthorController {
         return ResponseEntity.ok(author);
     }
 
-    @Operation(summary = "Get all authors", description = "fetches all author entities and their books")
+    @Operation(summary = "Get all authors", description = "fetches all author entities")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found all authors",
                     content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AuthorDTO.class))) })
@@ -51,5 +55,15 @@ public class AuthorController {
     public ResponseEntity<List<AuthorDTO>> getAll() {
         var authors = authorService.findAll();
         return ResponseEntity.ok(authors);
+    }
+
+    @Operation(summary = "Get all books for author", description = "fetches all book entities for an author with a certain id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found all books",
+                    content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = BookDTO.class))) })
+    })
+    @GetMapping("/{id}/books")
+    public ResponseEntity<List<BookDTO>> getBooksForAuthorWithId(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(bookService.findAllBooksForAuthorWithId(id));
     }
 }

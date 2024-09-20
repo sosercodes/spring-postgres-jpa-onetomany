@@ -20,6 +20,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,13 +112,6 @@ class AuthorControllerTestIT {
                 .body("id", equalTo(author1.getId().intValue()))
                 .body("firstName", equalTo(author1.getFirstName()))
                 .body("lastName", equalTo(author1.getLastName()));
-    /*
-                .body("books", hasSize(1))
-                .body("books[0].title", equalTo(books1.getTitle()))
-                .body("books[0].price", equalTo(books1.getPrice().floatValue()))
-                .body("books[0].publishDate", equalTo(books1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
-
-     */
     }
 
     @Test
@@ -144,4 +138,19 @@ class AuthorControllerTestIT {
                 .body(".", hasSize(3));
     }
 
+    @Test
+    void getBooksForAuthorWithId() {
+        given()
+                .contentType(ContentType.JSON)
+        .when()
+                .pathParam("id", author1.getId().toString())
+                .get("/api/authors/{id}/books")
+        .then()
+                .statusCode(HttpStatus.OK.value())
+                .contentType(ContentType.JSON)
+                .body(".", hasSize(1))
+                .body("[0].title", equalTo(books1.getTitle()))
+                .body("[0].price", equalTo(books1.getPrice().floatValue()))
+                .body("[0].publishDate", equalTo(books1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+    }
 }
