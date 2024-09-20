@@ -6,7 +6,9 @@ import dev.smo.spring.postgres.jpa.onetomany.entities.Book;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +25,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.config.JsonConfig.jsonConfig;
+import static io.restassured.path.json.config.JsonPathConfig.NumberReturnType.BIG_DECIMAL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 
+@Slf4j
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -140,17 +144,20 @@ class AuthorControllerTestIT {
 
     @Test
     void getBooksForAuthorWithId() {
-        given()
+        Response response = given()//Returning floats and doubles as BigDecimal
+                .config(RestAssured.config().jsonConfig(jsonConfig().numberReturnType(BIG_DECIMAL)))
                 .contentType(ContentType.JSON)
-        .when()
-                .pathParam("id", author1.getId().toString())
-                .get("/api/authors/{id}/books")
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .contentType(ContentType.JSON)
-                .body(".", hasSize(1))
-                .body("[0].title", equalTo(books1.getTitle()))
-                .body("[0].price", equalTo(books1.getPrice().floatValue()))
-                .body("[0].publishDate", equalTo(books1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .when()
+                    .pathParam("id", author1.getId().toString())
+                    .get("/api/authors/{id}/books")
+                .then()
+                    .statusCode(HttpStatus.OK.value())
+                    .contentType(ContentType.JSON)
+                    .body(".", hasSize(1))
+                    .body("[0].title", equalTo(books1.getTitle()))
+                    .body("[0].price", comparesEqualTo(books1.getPrice()))
+                    .body("[0].publishDate", equalTo(books1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
+                .extract().response();
+        log.info(response.asString());
     }
 }

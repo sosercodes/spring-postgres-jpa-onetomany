@@ -38,7 +38,7 @@ There are two choices how to create a `OneToMany` relationship.
 - Allow navigation from both sides of the relationship
 - Provide better control over the relationship
 
-**Unidirectional** relationships are simpler but less efficient and they create an additonal table for the mapping.
+**Unidirectional** relationships are simpler but less efficient and they create an additional table for the mapping.
 
 ### Basic Implementation
 
@@ -158,7 +158,7 @@ JPQL allows you to join entities in queries using several types of joins.
 - Inner Joins
 - Left Joins
 - Fetch Joins
-- Joins betweeen Unrelated Entities
+- Joins between Unrelated Entities
 
 #### Inner Joins
 
@@ -226,10 +226,10 @@ SELECT a FROM Author a WHERE a.books.title LIKE '%Spring%'
 - Use JOIN for inner joins and LEFT JOIN for left outer joins
 - JOIN FETCH eagerly loads associated entities
 - Joins are typically based on entity relationships defined in mappings
-- For complex joins on unrelated entities, use Hibernate's ON clause syntax
+- For complex joins on unrelated entities, use Hibernates ON clause syntax
 - Avoid overusing joins, as they can impact query performance for large datasets
 
-When writing JPQL queries, consider the relationships between your entities and choose the appropriate join type based on your data access requirements[3][8].
+When writing JPQL queries, consider the relationships between your entities and choose the appropriate join type based on your data access requirements.
 
 ## Rest-Assured
 
@@ -334,6 +334,55 @@ mvn verify
 
 Integration tests are run during the `integration-test` phase of the Maven build lifecycle. So this command will run both unit tests and integration tests.
 
+### Returning floats and doubles as BigDecimal
+
+You can configure Rest-Assured to return floats and doubles as `BIGDECIMAL`.
+But, there might be some strange errors while comparing `BIGDECIMAL` numbers.
+
+```bash
+java.lang.AssertionError: 1 expectation failed.
+JSON path [0].price doesn't match.
+Expected: <11.0>
+  Actual: <11.00>
+```
+
+The reason is that the correct way to compare `BigDecimal` is to use the `comparesEqualTo` matcher instead of `equalTo`.
+
+```java
+class AuthorControllerTestIT {
+
+    @Autowired
+    PostgreSQLContainer<?> postgres;
+
+    @Autowired
+    AuthorRepository authorRepository;
+    
+    private Author author1;
+    private Book books1;
+
+    // setup ...
+  
+    @Test
+    void getBooksForAuthorWithId() {
+        Response response = given()//Returning floats and doubles as BigDecimal
+                .config(RestAssured.config().jsonConfig(jsonConfig().numberReturnType(BIG_DECIMAL)))
+                .contentType(ContentType.JSON)
+                .when()
+                    .pathParam("id", author1.getId().toString())
+                    .get("/api/authors/{id}/books")
+                .then()
+                    .statusCode(HttpStatus.OK.value())
+                    .contentType(ContentType.JSON)
+                    .body(".", hasSize(1))
+                    .body("[0].title", equalTo(books1.getTitle()))
+                    .body("[0].price", equalTo(books1.getPrice()))
+                    .body("[0].publishDate", equalTo(books1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
+                .extract().response();
+        log.info(response.asString());
+    }
+}
+```
+
 ## Documenting our REST API using OpenAPI 3.0
 
 Springdoc-openapi is a popular library for automatically generating OpenAPI 3 documentation for Spring Boot applications.
@@ -429,6 +478,7 @@ Rest-Assured
 - [Getting and Verifying Response Data with REST-assured](https://www.baeldung.com/rest-assured-response)
 - [How to combine Testcontainers, REST-Assured and WireMock](https://medium.com/@nihatonder87/how-to-combine-testcontainers-rest-assured-and-wiremock-8e5cb3ede16e)
 - [Rest-Assured :: Wiki :: Returning floats and doubles as BigDecimal](https://github.com/rest-assured/rest-assured/wiki/Usage#returning-floats-and-doubles-as-bigdecimal)
+- [JUnit Assert with BigDecimal](https://stackoverflow.com/questions/35573187/junit-assert-with-bigdecimal)
 
 Open-Api / Swagger
 
