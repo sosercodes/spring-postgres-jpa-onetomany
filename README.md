@@ -462,8 +462,9 @@ OneToMany
 - [Vlad Mihalcea - The best way to map a @OneToMany relationship with JPA and Hibernate](https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/)
 - [CodeGaym - Cascading changes](https://codegym.cc/quests/lectures/en.questhibernate.level13.lecture05)
 
-Hibernate
+JPA / Hibernate
 
+- [@TRANSACTIONAL IN SPRING BOOT](https://youlearncode.com/transactional-in-spring-boot/)
 - [Hibernate Entity Lifecycle](https://www.baeldung.com/hibernate-entity-lifecycle#managed-entity)
 
 JPQL
@@ -484,3 +485,7 @@ Open-Api / Swagger
 
 - [Documenting a Spring REST API Using OpenAPI 3.0](https://www.baeldung.com/spring-rest-openapi-documentation)
 - [Fady Kuzman - Using Swagger 3 in Spring Boot 3](https://medium.com/@f.s.a.kuzman/using-swagger-3-in-spring-boot-3-c11a483ea6dc)
+
+Mapstruct
+
+- [Quick Guide to MapStruct](https://www.baeldung.com/mapstruct)
