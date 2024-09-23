@@ -30,4 +30,10 @@ public class AuthorServiceImpl implements AuthorService {
     public List<AuthorDTO> findAll() {
         return authorRepository.findAll().stream().map(authorMapper::toAuthorDTO).toList();
     }
+
+    @Override
+    public AuthorDTO save(AuthorDTO authorDTO) {
+        var author = authorMapper.toAuthor(authorDTO);
+        return authorMapper.toAuthorDTO(authorRepository.save(author));
+    }
 }

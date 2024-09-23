@@ -17,6 +17,48 @@ This application uses the following Technologies.
 - REST Assured
 - OpenApi / Swagger-Ui
 
+## Authors API
+
+### GET
+
+Find all authors.
+
+```bash
+curl -sS localhost:8080/api/authors | jq
+```
+
+Get a specific author with an `id`.
+
+```bash
+$ curl -sS localhost:8080/api/authors/1 | jq
+{
+  "id": 1,
+  "firstName": "Craig",
+  "lastName": "Walls"
+}
+```
+
+Get all books for author with `id`.
+
+```bash
+$ curl -sS localhost:8080/api/authors/1/books | jq
+[
+  {
+    "id": 1,
+    "title": "Spring in Action",
+    "price": 51.40,
+    "publishDate": "2022-03-01"
+  }
+]
+```
+
+### POST
+
+Create an `Author`. Set `firstname` and `lastname`.
+
+```bash
+curl localhost:8080/api/authors -v -H'Content-Type: application/json' -d '{"firstName":"Alex","lastName":"Xu"}'
+```
 
 ## One-to-Many Relationships
 

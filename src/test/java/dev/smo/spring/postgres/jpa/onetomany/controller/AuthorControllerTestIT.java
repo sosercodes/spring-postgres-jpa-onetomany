@@ -3,6 +3,7 @@ package dev.smo.spring.postgres.jpa.onetomany.controller;
 import dev.smo.spring.postgres.jpa.onetomany.TestcontainersConfiguration;
 import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
 import dev.smo.spring.postgres.jpa.onetomany.entities.Book;
+import dev.smo.spring.postgres.jpa.onetomany.model.AuthorDTO;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -17,7 +18,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.math.BigDecimal;
@@ -159,5 +162,38 @@ class AuthorControllerTestIT {
                     .body("[0].publishDate", equalTo(books1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
                 .extract().response();
         log.info(response.asString());
+    }
+
+    @Test
+    @Transactional
+    @Rollback
+    void createAuthor() {
+        var newAuthor = AuthorDTO.builder().firstName("Author 1 created first name").lastName("Author 1 created last name").build();
+        Integer id = given()
+                .contentType(ContentType.JSON)
+                .body(newAuthor)
+                .when()
+                    .post("/api/authors")
+                .then()
+                    .statusCode(HttpStatus.CREATED.value())
+                    .contentType(ContentType.JSON)
+                    .body("firstName", equalTo(newAuthor.getFirstName()))
+                    .body("lastName", equalTo(newAuthor.getLastName()))
+                .extract().path("id");
+        assertThat(authorRepository.findById(id.longValue()).isEmpty()).isFalse();
+        assertThat(authorRepository.findById(id.longValue()).get().getFirstName()).isEqualTo(newAuthor.getFirstName());
+        assertThat(authorRepository.findById(id.longValue()).get().getLastName()).isEqualTo(newAuthor.getLastName());
+    }
+
+    @Test
+    void createAuthorWithIdSet() {
+        var newAuthor = AuthorDTO.builder().id(1L).firstName("Author 1 created first name").lastName("Author 1 created last name").build();
+        given()
+                .contentType(ContentType.JSON)
+                .body(newAuthor)
+                .when()
+                    .post("/api/authors")
+                .then()
+                    .statusCode(HttpStatus.BAD_REQUEST.value());
     }
 }

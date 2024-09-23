@@ -1,5 +1,6 @@
 package dev.smo.spring.postgres.jpa.onetomany.controller;
 
+import dev.smo.spring.postgres.jpa.onetomany.exception.BadRequestException;
 import dev.smo.spring.postgres.jpa.onetomany.exception.ResourceNotFoundException;
 import dev.smo.spring.postgres.jpa.onetomany.model.AuthorDTO;
 import dev.smo.spring.postgres.jpa.onetomany.model.BookDTO;
@@ -13,11 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @Tag(name = "Authors", description = "the Author Api")
@@ -65,5 +64,19 @@ public class AuthorController {
     @GetMapping("/{id}/books")
     public ResponseEntity<List<BookDTO>> getBooksForAuthorWithId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(bookService.findAllBooksForAuthorWithId(id));
+    }
+
+    @Operation(summary = "Create author", description = "Creates an author")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created author",
+                    content = { @Content(mediaType = "application/json", schema =  @Schema(implementation = AuthorDTO.class)) })
+    })
+    @PostMapping
+    public ResponseEntity<AuthorDTO> createAuthor(@RequestBody AuthorDTO authorDTO) {
+        if (authorDTO.getId() != null) {
+            throw new BadRequestException("Inserting ID with POST request is not allowed!");
+        }
+        var author = authorService.save(authorDTO);
+        return ResponseEntity.created(URI.create("/api/authors" + author.getId())).body(author);
     }
 }

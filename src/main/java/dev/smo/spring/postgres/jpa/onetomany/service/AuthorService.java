@@ -10,4 +10,6 @@ public interface AuthorService {
     Optional<AuthorDTO> findById(Long id);
 
     List<AuthorDTO> findAll();
+
+    AuthorDTO save(AuthorDTO authorDTO);
 }
