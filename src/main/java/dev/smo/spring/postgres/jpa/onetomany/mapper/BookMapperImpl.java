@@ -9,6 +9,9 @@ public class BookMapperImpl implements BookMapper {
 
     @Override
     public BookDTO toBookDTO(Book book) {
+        if (book == null) {
+            return null;
+        }
         var bookDTO = new BookDTO();
         bookDTO.setId(book.getId());
         bookDTO.setTitle(book.getTitle());
@@ -19,6 +22,9 @@ public class BookMapperImpl implements BookMapper {
 
     @Override
     public Book toBook(BookDTO bookDTO) {
+        if (bookDTO == null) {
+            return null;
+        }
         var book = new Book();
         book.setId(bookDTO.getId());
         book.setTitle(bookDTO.getTitle());
