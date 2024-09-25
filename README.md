@@ -239,7 +239,7 @@ For Hibernate 5.1+, you can join unrelated entities using an ON clause:
 
 ```jpaql
 SELECT a.firstName, a.lastName, e.phoneNumber 
-FROM Author p JOIN PhoneBookEntry e 
+FROM Author a JOIN PhoneBookEntry e 
 ON a.firstName = e.firstName AND a.lastName = e.lastName
 ```
 
