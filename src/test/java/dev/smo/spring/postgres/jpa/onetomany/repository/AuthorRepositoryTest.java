@@ -17,8 +17,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -85,4 +85,31 @@ class AuthorRepositoryTest {
         assertNotNull(a1notfound);
         assertEquals(a1notfound.size(), 0);
     }
+
+    @Test
+    @Transactional
+    @Rollback
+    void findByIdWithBooks() {
+        Author a1 = Author.builder()
+                .firstName("firstname")
+                .lastName("lastname")
+                .books(new ArrayList<>())
+                .build();
+        Book b1 = Book.builder()
+                .title("book 1")
+                .price(BigDecimal.valueOf(10.00))
+                .publishDate(LocalDate.of(2024 , 1, 10))
+                .author(a1)
+                .build();
+        a1.getBooks().add(b1);
+
+        var author = authorRepository.save(a1);
+
+        var authorRetrieved = authorRepository.findByIdWithBooks(author.getId());
+        assertThat(authorRetrieved.isPresent()).isTrue();
+        assertThat(authorRetrieved.get().getFirstName()).isEqualTo(a1.getFirstName());
+        assertThat(authorRetrieved.get().getLastName()).isEqualTo(a1.getLastName());
+        assertThat(authorRetrieved.get().getBooks().size()).isEqualTo(1);
+    }
+
 }

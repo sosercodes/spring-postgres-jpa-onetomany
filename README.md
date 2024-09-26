@@ -60,6 +60,12 @@ Create an `Author`. Set `firstname` and `lastname`.
 curl localhost:8080/api/authors -v -H'Content-Type: application/json' -d '{"firstName":"Alex","lastName":"Xu"}'
 ```
 
+Create a `Book` and add it to an author.
+
+```bash
+curl "localhost:8080/api/authors/1/books" -v -H'Content-Type: application/json' -d '{"title":"System Design Interview – An insiders guide","price": 39.71, "publishDate":  "2020-06-12"}'
+```
+
 ## One-to-Many Relationships
 
 If you create a database schema, a _one-to-many_ mapping means that one row in a table is mapped to multiple rows in another table.

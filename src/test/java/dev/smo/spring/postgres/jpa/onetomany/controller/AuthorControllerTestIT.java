@@ -5,6 +5,7 @@ import dev.smo.spring.postgres.jpa.onetomany.entities.Author;
 import dev.smo.spring.postgres.jpa.onetomany.entities.Book;
 import dev.smo.spring.postgres.jpa.onetomany.model.AuthorDTO;
 import dev.smo.spring.postgres.jpa.onetomany.repository.AuthorRepository;
+import dev.smo.spring.postgres.jpa.onetomany.repository.BookRepository;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -18,9 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.math.BigDecimal;
@@ -48,6 +47,9 @@ class AuthorControllerTestIT {
 
     @LocalServerPort
     private int port;
+
+    @Autowired
+    private BookRepository bookRepository;
 
     @PostConstruct
     public void init() {
@@ -165,8 +167,6 @@ class AuthorControllerTestIT {
     }
 
     @Test
-    @Transactional
-    @Rollback
     void createAuthor() {
         var newAuthor = AuthorDTO.builder().firstName("Author 1 created first name").lastName("Author 1 created last name").build();
         Integer id = given()
@@ -195,5 +195,58 @@ class AuthorControllerTestIT {
                     .post("/api/authors")
                 .then()
                     .statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    void createBookForAuthorWithId() {
+        Book newBook = Book.builder()
+                .title("Book 1.1 book title")
+                .price(BigDecimal.valueOf(11.11))
+                .publishDate(LocalDate.of(2024 , 11, 11))
+                .build();
+
+        Integer id = given()
+                .config(RestAssured.config().jsonConfig(jsonConfig().numberReturnType(BIG_DECIMAL)))
+                .contentType(ContentType.JSON)
+                .pathParam("id", author1.getId().toString())
+                .body(newBook)
+                .when()
+                .post("/api/authors/{id}/books")
+                .then()
+                    .statusCode(HttpStatus.CREATED.value())
+                    .contentType(ContentType.JSON)
+                    .body("title", equalTo(newBook.getTitle()),
+                            "price", equalTo(newBook.getPrice()),
+                            "publishDate", equalTo(newBook.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
+                .extract().path("id");
+
+        assertThat(bookRepository.findById(id.longValue()).isEmpty()).isFalse();
+        assertThat(bookRepository.findById(id.longValue()).get().getTitle()).isEqualTo(newBook.getTitle());
+        assertThat(bookRepository.findById(id.longValue()).get().getPrice()).isEqualTo(newBook.getPrice());
+        assertThat(bookRepository.findById(id.longValue()).get().getPublishDate()).isEqualTo(newBook.getPublishDate());
+        assertThat(bookRepository.findAll().size()).isEqualTo(4);
+
+        assertThat(authorRepository.findByIdWithBooks(author1.getId()).isEmpty()).isFalse();
+        assertThat(authorRepository.findByIdWithBooks(author1.getId()).get().getBooks()).hasSize(2);
+    }
+
+
+    @Test
+    void createBookForAuthorWithNotExistingId() {
+        Book newBook = Book.builder()
+                .title("Book 1.1 book title")
+                .price(BigDecimal.valueOf(11.11))
+                .publishDate(LocalDate.of(2024 , 11, 11))
+                .build();
+
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("id", 0L)
+                .body(newBook)
+                .when()
+                    .post("/api/authors/{id}/books")
+                .then()
+                    .statusCode(HttpStatus.NOT_FOUND.value());
+
     }
 }

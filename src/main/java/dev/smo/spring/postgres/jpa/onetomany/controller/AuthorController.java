@@ -24,8 +24,8 @@ import java.util.List;
 @RequestMapping("/api/authors")
 public class AuthorController {
 
-    AuthorService authorService;
-    BookService bookService;
+    private final AuthorService authorService;
+    private final BookService bookService;
 
     public AuthorController(AuthorService authorService, BookService bookService) {
         this.authorService = authorService;
@@ -78,5 +78,12 @@ public class AuthorController {
         }
         var author = authorService.save(authorDTO);
         return ResponseEntity.created(URI.create("/api/authors" + author.getId())).body(author);
+    }
+
+    @PostMapping("/{id}/books")
+    public ResponseEntity<BookDTO> createBookForAuthorWithId(@RequestBody BookDTO bookDTO, @PathVariable("id") Long id) {
+        var book = bookService.saveBookForAuthorWithId(bookDTO, id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author with id: '" + id + "' not found!"));
+        return ResponseEntity.created(URI.create("/api/authors" + book.getId())).body(book);
     }
 }
