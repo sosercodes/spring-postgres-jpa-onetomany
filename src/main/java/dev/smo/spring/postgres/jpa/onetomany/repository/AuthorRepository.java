@@ -16,9 +16,8 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
     @Query("select a from Author a left join fetch a.books where a.id = :id")
     Optional<Author> findByIdWithBooks(Long id);
 
-    @Override
     @Query("from Author a left join fetch a.books")
-    List<Author> findAll();
+    List<Author> findAllFetchBooks();
 
     void deleteByFirstName(String firstName);
 }
