@@ -1,10 +1,7 @@
-# Spring Boot, Postgres, and OneToMany
+# Spring Boot, Postgres, OneToMany, and REST Assured
 
-This article shows how to use Spring Boot, Spring Data JPA and PostgreSQL to create a One-to-Many Relationship. 
+This project shows how to use Spring Boot, Postgres, and OneToMany to create a One-to-Many Relationship. 
 Additionally it shows how to add REST endpoints for CRUD database operations and test them with REST Assured.
-
-We use Testcontainers to start an actual PostgreSQL container for testing and developement.
-You need to have Docker or Docker Desktop to be running in the background.
 
 This application uses the following Technologies.
 
@@ -18,6 +15,10 @@ This application uses the following Technologies.
 - OpenApi / Swagger-Ui
 
 ## Authors API
+
+This project uses Testcontainers to start an actual PostgreSQL container for testing and developement.
+Please assure that you have Docker or Docker Desktop to be running in the background.
+If this is the case you can start it in Intellij and a Postrgres Container is spinning up in the background.
 
 ### GET
 
@@ -71,7 +72,7 @@ curl "localhost:8080/api/authors/1/books" -v -H'Content-Type: application/json' 
 If you create a database schema, a _one-to-many_ mapping means that one row in a table is mapped to multiple rows in another table.
 The _"one" side_ has a _primary key_ and the _"many" side_ has a _foreign key_ which refers to the primary key of _"one" side_.
 
-In Spring Data JPA OneToMany relationships allow you to model _one-to-many_ mapping where one _entity_ can have _multiple related entities_.
+In Spring Data JPA _OneToMany Relationships_ allow you to model a _one-to-many_ mapping where one _entity_ can have _multiple related entities_.
 
 ### Bidirectional vs Unidirectional
 
@@ -92,9 +93,7 @@ There are two choices how to create a `OneToMany` relationship.
 
 Here's an overview of how to implement and use _bidirectional OneToMany_ relationships.
 
-To create a `OneToMany` relationship.
-
-On the "one" side, use the `@OneToMany` annotation.
+In order to create a `OneToMany` relationship you have to add the `@OneToMany` annotation on the "one" side. In our case this is the `Author`.
 
 ```java
 @Entity
@@ -130,15 +129,14 @@ public class Book {
 Let's break down the properties of the `@OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)` association.
 
 The `mappedBy` property is used to specify the field in the child entity that _owns the relationship_. 
-In this case, `author` indicates that the Book entity has a field named `author` that represents the owning side of the relationship.
+In this case, `author` indicates that the Book entity has a field named `author` that represents the **_Owning side_** of the relationship.
 
 Key points about `mappedBy`:
 
 - It establishes a bidirectional relationship
 - It's used on the non-owning side of the relationship (usually the "one" side)
-- It helps avoid duplicate foreign key columns
 
-The `cascade` property defines how state transitions are cascaded from parent entities to child entities. `CascadeType.ALL` means that all operations (PERSIST, MERGE, REMOVE, REFRESH, DETACH) will be cascaded from the parent entity to its associated child entities, see [Cascade changes](https://codegym.cc/quests/lectures/en.questhibernate.level13.lecture05).
+The `cascade` property defines how state transitions are cascaded from parent entities to child entities. `CascadeType.ALL` means that all operations (PERSIST, MERGE, REMOVE, REFRESH, DETACH) will be cascaded from the parent entity to its associated child entities.
 
 Effects of `CascadeType.ALL` are:
 
@@ -147,8 +145,7 @@ Effects of `CascadeType.ALL` are:
 - **Remove**: Deleting the parent entity will also delete all its associated child entities
 
 The `orphanRemoval = true` property is used to ensure that there are no child entities without parent entities.
-It's not exactly the same as `Cascade.REMOVE`.
-It assures that if there are several parent entities, the child is only deleted if all parent entities deleted .
+If you remove the child from the parent's collection, then the child will be removed.
 
 ### Best Practices
 
@@ -159,17 +156,18 @@ The following best practices are recommended.
 - **Orphan removal**: Use `orphanRemoval = true` to automatically remove child entities when they're removed from the collection
 - **Bidirectional relationship management**: Always maintain both sides of the relationship and add the following methods to the `Book` entity.
 
-    ```java
-    public void addBook(Book book) {
-        books.add(book);
-        book.setAuthor(this);
-    }
-    
-    public void removeBook(Book book) {
-        books.remove(book);
-        book.setAuthor(null);
-    }
-    ```
+   ```java
+      public void addBook(Book book) {
+          books.add(book);
+          book.setAuthor(this);
+      }
+      
+      public void removeBook(Book book) {
+          books.remove(book);
+          book.setAuthor(null);
+      }
+   ```
+              
 - **Owning Side**: _It’s a good practice to mark the many-to-one side as the owning side (JPA specification under section 2.9)_
     In this example `Book` should be the owning side and `Author` the inverse side.
     
@@ -188,10 +186,6 @@ The following best practices are recommended.
 
 - Avoid eagerly fetching large collections. Use JPQL queries for better performance when dealing with large datasets
 - Consider using `@ManyToOne` on the child side only if you don't need to access the collection from the parent side often, see [The best way to map a @OneToMany relationship with JPA and Hibernate](https://vladmihalcea.com/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/).
-
-### Conclusion
-
-OneToMany relationships in Spring Data JPA provide a powerful way to model hierarchical data structures. By following best practices and understanding the implications of bidirectional vs unidirectional relationships, you can create efficient and maintainable data models for your application.
 
 
 ## JPQL - Java Persistence Query Language
@@ -281,8 +275,8 @@ When writing JPQL queries, consider the relationships between your entities and 
 
 ## Rest-Assured
 
-Our integration tests use REST Assured in conjunction with Testcontainers to test the Spring REST services,
-that run in within a containerized environment, ensuring a more realistic and comprehensive testing scenario.
+The integration tests use REST Assured in conjunction with Testcontainers to test the Spring REST services,
+that run in a containerized environment, ensuring a more realistic and comprehensive testing scenario.
 
 For example we use the following `@GetMapping` in the `AuthorController` to get a `Author` from the database.
 
@@ -307,7 +301,7 @@ public class AuthorController {
 }
 ```
 
-Here's a basic example of how a our integration test using REST Assured might look:
+Here's a basic example of how a integration test using REST Assured might look:
 
 ```java
 @Import(TestcontainersConfiguration.class)
@@ -332,7 +326,7 @@ class AuthorControllerTestIT {
         RestAssured.baseURI = "http://localhost/";
         RestAssured.port = port;
     }
-
+    
     @Test
     void getAuthorWithExistingId() {
         Author a1 = Author.builder()
@@ -358,11 +352,7 @@ class AuthorControllerTestIT {
                 .statusCode(HttpStatus.OK.value())
                 .body("id", equalTo(author.getId().intValue()))
                 .body("firstName", equalTo(author.getFirstName()))
-                .body("lastName", equalTo(author.getLastName()))
-                .body("books", hasSize(1))
-                .body("books[0].title", equalTo(b1.getTitle()))
-                .body("books[0].price", equalTo(b1.getPrice().floatValue()))
-                .body("books[0].publishDate", equalTo(b1.getPublishDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+                .body("lastName", equalTo(author.getLastName()));
     }
 }
 ```
@@ -373,7 +363,26 @@ This setup allows us to:
 - Start the Spring Boot application with the test database
 - Use Rest-Assured to make HTTP requests to the Spring Boot REST API and validate the responses
 
+### Maven Failsafe Plugin
+
 We use the Maven Failsafe Plugin to run integration tests in Maven projects. 
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-failsafe-plugin</artifactId>
+    <version>${maven.failsafe.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
 You can execute them by running:
 
 ```bash
@@ -433,9 +442,9 @@ class AuthorControllerTestIT {
 
 ## Documenting our REST API using OpenAPI 3.0
 
-Springdoc-openapi is a popular library for automatically generating OpenAPI 3 documentation for Spring Boot applications.
+Springdoc-OpenAPI is a popular library for automatically generating OpenAPI 3 documentation for Spring Boot applications.
 
-To use springdoc-openapi add the following dependency:
+In order to use springdoc-openapi this project adds the following dependency:
 
 ```xml
 <dependency>
@@ -447,17 +456,19 @@ To use springdoc-openapi add the following dependency:
 
 This dependency includes Swagger UI, allowing you to view the generated API documentation in a user-friendly interface.
 
-Once you've added the dependency and started your Spring Boot application, we can run our application and find the OpenAPI descriptions at /v3/api-docs`.
+You can find the Swagger UI interface at: `/swagger-ui.html`
 
 ```bash
-http://localhost:8080/v3/api-docs
+http://localhost:8080/swagger-ui.html
 ```
 
-We can configure the path in `application.properties` and set it to `/api-docs`.
+The default location for the OpenAPI descriptions is at `http://localhost:8080/v3/api-docs` but you can configure the path in `application.properties` and set it to `/api-docs`.
 
 ```text
 springdoc.api-docs.path=/api-docs
 ```
+
+So now you can find the Description at `http://localhost:8080/api-docs`.
 
 The OpenAPI definitions are in JSON format by default. For yaml format, we can add the `.yaml` suffix.
 
@@ -465,11 +476,7 @@ The OpenAPI definitions are in JSON format by default. For yaml format, we can a
 http://localhost:8080/api-docs.yaml
 ```
 
-We can find the Swagger UI interface at: `/swagger-ui.html`
-
-```bash
-http://localhost:8080/swagger-ui.html
-```
+### How to configure the OpenApi page
 
 Did you notice that ugly heading `author-controller` on the top? We can change that using The `@Tag` annotation. 
 And you can also customize the generated documentation using annotations like `@Operation("")` and `@ApiResponses` to give the user some hints.
@@ -501,7 +508,6 @@ public class AuthorController {
 }
 ```
 
-
 ## References
 
 OneToMany
@@ -514,6 +520,7 @@ JPA / Hibernate
 
 - [@TRANSACTIONAL IN SPRING BOOT](https://youlearncode.com/transactional-in-spring-boot/)
 - [Hibernate Entity Lifecycle](https://www.baeldung.com/hibernate-entity-lifecycle#managed-entity)
+- [Performance oriented Spring Data JPA & Hibernate by Maciej Walkowiak](https://github.com/maciejwalkowiak/performance-oriented-spring-data-jpa-talk)
 
 JPQL
 
